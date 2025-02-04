@@ -31,7 +31,7 @@ app.use("/api/gadgets", gadgetsRoutes);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // 404 Route
 app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).send("Page not found");
 });
 
 const PORT = process.env.PORT || 5000;
