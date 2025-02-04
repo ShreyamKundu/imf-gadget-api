@@ -1,0 +1,214 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "IMF Gadget API",
+    "version": "1.0.0",
+    "description": "API for managing IMF gadgets, including authentication, inventory, and self-destruct functionality."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "user@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Signup successful" },
+          "400": { "description": "User already exists" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login user and set token in cookie",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "user@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "401": { "description": "Invalid credentials" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout user by clearing the authentication cookie",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": { "description": "Logout successful" }
+        }
+      }
+    },
+    "/gadgets": {
+      "post": {
+        "summary": "Add a new gadget",
+        "tags": ["Gadgets"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Gadget created successfully" },
+          "401": { "description": "Unauthorized - Token required" },
+          "500": { "description": "Internal server error" }
+        }
+      },
+      "get": {
+        "summary": "Retrieve all gadgets",
+        "tags": ["Gadgets"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter gadgets by status (Available, Deployed, Destroyed, Decommissioned)",
+            "example": "Deployed"
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of gadgets retrieved successfully" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/gadgets/{id}": {
+      "patch": {
+        "summary": "Update an existing gadget",
+        "tags": ["Gadgets"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the gadget to update"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "New Gadget Name" },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "Available",
+                      "Deployed",
+                      "Destroyed",
+                      "Decommissioned"
+                    ],
+                    "example": "Deployed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Gadget updated successfully" },
+          "401": { "description": "Unauthorized - Token required" },
+          "404": { "description": "Gadget not found" },
+          "500": { "description": "Internal server error" }
+        }
+      },
+      "delete": {
+        "summary": "Soft delete a gadget (Mark as 'Decommissioned')",
+        "tags": ["Gadgets"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the gadget to delete"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Gadget marked as 'Decommissioned'" },
+          "401": { "description": "Unauthorized - Token required" },
+          "404": { "description": "Gadget not found" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/gadgets/{id}/self-destruct": {
+      "post": {
+        "summary": "Trigger self-destruct sequence for a gadget",
+        "tags": ["Gadgets"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the gadget to self-destruct"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Self-destruct sequence initiated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Self-destruct sequence initiated",
+                  "confirmationCode": 123456,
+                  "note": "Use this code to confirm self-destruction (simulation only)."
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized - Token required" },
+          "404": { "description": "Gadget not found" },
+          "400": { "description": "Gadget already destroyed" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
