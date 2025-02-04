@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://imf-gadget-api-fjnt.onrender.com",
+      "url": "https://imf-gadget-api-fjnt.onrender.com/api",
       "description": "Production Server"
     }
   ],
